@@ -24,3 +24,7 @@ class Config:
     # Pinecone Serverless Spec for auto creation
     CLOUD_PROVIDER = "aws" 
     REGION = "us-east-1"
+
+    # LLM Settings
+    LLM_MODEL = "gpt-4o-mini"
+    TEMPERATURE = 0
