@@ -34,3 +34,13 @@ if not chunks:
     raise ValueError("No chunks were created from the documents")
 
 print(f"Split document into {len(chunks)} chunks")
+
+
+# Create embeddings for one of the chunks
+embeddings_model = OpenAIEmbeddings(openai_api_key = openai_api_key)
+
+first_chunk_text = chunks[0].page_content
+print(f"Creating embedding for the first chunk: {first_chunk_text[:50]}...")
+
+first_chunk_embedding = embeddings_model.embed_query(first_chunk_text)
+# print(f"Embedding for the first chunk: {first_chunk_embedding}")
