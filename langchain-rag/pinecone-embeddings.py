@@ -4,12 +4,17 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
+from langchain_pinecone import PineconeVectorStore
+
+from pinecone import Pinecone
 
 # Load environment variables from a .env file
 load_dotenv()
 
 # Load openAI API key from environment
 openai_api_key = os.getenv("OPENAI_API_KEY")
+pinecone_api_key = os.getenv("PINECONE_API_KEY")
+index_name = "langchain-rag-index-v1"
 
 # Load document
 loader = PyPDFLoader("sample.pdf")
@@ -37,10 +42,28 @@ print(f"Split document into {len(chunks)} chunks")
 
 
 # Create embeddings for one of the chunks
-embeddings_model = OpenAIEmbeddings(openai_api_key = openai_api_key)
+embeddings_model = OpenAIEmbeddings(
+    openai_api_key = openai_api_key,
+    model="text-embedding-ada-002"
+)
 
-first_chunk_text = chunks[0].page_content
-print(f"Creating embedding for the first chunk: {first_chunk_text[:50]}...")
+# first_chunk_text = chunks[0].page_content
+# print(f"Creating embedding for the first chunk: {first_chunk_text[:50]}...")
 
-first_chunk_embedding = embeddings_model.embed_query(first_chunk_text)
+# first_chunk_embedding = embeddings_model.embed_query(first_chunk_text)
 # print(f"Embedding for the first chunk: {first_chunk_embedding}")
+
+# Initialize Pinecone
+pc = Pinecone(api_key=pinecone_api_key)
+index = pc.Index(index_name)
+
+# Create Pinecone vector store from document chunks
+vectorstore = PineconeVectorStore.from_documents(
+    documents=chunks,
+    embedding=embeddings_model,
+    index_name=index_name,
+)
+
+print("Pinecone vector store created successfully from document chunks")
+stats = index.describe_index_stats()
+print(f"Index stats: {stats}")
