@@ -14,6 +14,9 @@ openai_api_key = os.getenv("OPENAI_API_KEY")
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 index_name = "langchain-rag-index-v1"
 
+# Initialize the LLM
+llm = ChatOpenAI(openai_api_key=openai_api_key, model="gpt-3.5-turbo")
+
 # Use the same embeddings model as in pinecone-embeddings.py
 embeddings_model = OpenAIEmbeddings(
     openai_api_key=openai_api_key, 
@@ -42,3 +45,18 @@ Question: {question}
 
 Helpful Answer:
 """
+
+prompt = ChatPromptTemplate.from_template(template)
+
+
+# Create RAG chain
+rag_chain = (
+    {"context": retriever, "question": RunnablePassthrough()} 
+    | prompt 
+    | llm 
+    | StrOutputParser()
+)
+
+question = "What is this document about?"
+answer = rag_chain.invoke(question)
+print(answer)
