@@ -27,7 +27,7 @@ print(f"Loaded {len(documents)} document(s) from the PDF")
 
 # Split document into chunks
 text_splitter = RecursiveCharacterTextSplitter(
-    # Maximum size of each chunk
+    # Maximum character size of each chunk
     chunk_size=1000, 
     # Overlap between chunks
     chunk_overlap=200
