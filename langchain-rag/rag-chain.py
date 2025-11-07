@@ -86,13 +86,12 @@ def get_response(message, history):
 
     formatted_history = format_history(history)
 
-    response_stream = rag_chain.stream({
+    response = rag_chain.invoke({
         "question": message,
         "chat_history": formatted_history
     })
 
-    for chunk in response_stream:
-        yield chunk
+    return response
 
 
 # question = "What is this document about?"
