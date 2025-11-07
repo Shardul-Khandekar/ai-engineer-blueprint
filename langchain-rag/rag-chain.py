@@ -1,6 +1,7 @@
 import os
 import gradio as gr
 from dotenv import load_dotenv
+from operator import itemgetter
 
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
@@ -71,9 +72,9 @@ def format_history(chat_history):
 # Create RAG chain
 rag_chain = (
     {
-        "context": retriever | format_docs, 
-        "question": RunnablePassthrough(),
-        "chat_history": RunnablePassthrough()
+        "context": itemgetter("question") | retriever | format_docs, 
+        "question": itemgetter("question"),
+        "chat_history": itemgetter("chat_history")
     } 
     | prompt 
     | llm 
