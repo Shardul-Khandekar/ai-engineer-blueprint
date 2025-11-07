@@ -101,6 +101,7 @@ def get_response(message, history):
 print("Launching Gradio interface")
 
 iface = gr.ChatInterface(
+    # fn defines the function to be called when a user submits a message
     fn=get_response,
     title="LangChain RAG Chat",
     description="A simple RAG chatbot using LangChain, Pinecone, and OpenAI.",
