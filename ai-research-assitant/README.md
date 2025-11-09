@@ -1,1 +1,3 @@
 Difference between dense and sparse vector index in pinecone
+
+RunnableParallel Dictionary
