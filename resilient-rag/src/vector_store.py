@@ -58,3 +58,28 @@ class VectorDBManager:
 
             else:
                 print(f"Index '{self.config.INDEX_NAME}' already exists")
+
+        def get_vector_store(self):
+
+            """Returns Pinecone Vector Store instance"""
+            return PineconeVectorStore(
+                index_name=self.config.INDEX_NAME,
+                embedding=self.embeddings,
+                pinecone_api_key=self.config.PINECONE_API_KEY
+            )
+        
+        def upsert_chunks(self, chunks):
+
+            """Takes chunks from ingestion and upload them"""
+            self.ensure_index_exists()
+
+            print(f"Upserting {len(chunks)} chunks to Pinecone")
+            vector_store = self.get_vector_store()
+
+            try:
+                vector_store.add_documents(documents=chunks)
+                print("Upsert complete!")
+
+            except Exception as e:
+                print(f"Failed to upsert chunks: {e}")
+                raise e
