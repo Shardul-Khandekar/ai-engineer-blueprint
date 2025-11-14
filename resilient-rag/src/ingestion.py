@@ -36,6 +36,8 @@ class IngestionPipeline:
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
             # First try to split by double newlines, then single newlines, then spaces, then characters
+            # This is like waterfall, first it tries to keep entire paragraphs together, but if there are more than chunk_size
+            # characters in a paragraph, it will split by single newlines, and so on.
             separators=["\n\n", "\n", " ", ""]
         )
 

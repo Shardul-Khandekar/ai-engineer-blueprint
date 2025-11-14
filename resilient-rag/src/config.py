@@ -15,3 +15,12 @@ class Config:
 
     # Vector index
     INDEX_NAME = "resilient-rag-v1"
+    EMBEDDING_MODEL = "text-embedding-3-small"
+
+    # API Keys
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+
+    # Pinecone Serverless Spec for auto creation
+    CLOUD_PROVIDER = "aws" 
+    REGION = "us-east-1"
