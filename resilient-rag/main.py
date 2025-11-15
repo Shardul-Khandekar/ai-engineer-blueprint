@@ -1,6 +1,9 @@
 from src.ingestion import IngestionPipeline
+from src.vector_store import VectorDBManager
 
-if __name__ == "__main__":
+def main():
+
+    print("--- STEP 1: Ingestion ---")
 
     # Initialize pipeline
     pipeline = IngestionPipeline()
@@ -8,7 +11,19 @@ if __name__ == "__main__":
     # Run ingestion process
     chunks = pipeline.run()
 
+    print("\n--- STEP 2: Storage ---")
+
     if chunks:
-        print("Inspection: First Chunk")
-        print(f"Content: {chunks[0].page_content[:200]}")
-        print(f"Metadata: {chunks[0].metadata}")
+        db_manager = VectorDBManager()
+        db_manager.upsert_chunks(chunks)
+
+        index_stats = db_manager.pc.Index(
+            db_manager.config.INDEX_NAME).describe_index_stats()
+
+        print(f"Total Vectors in DB: {index_stats['total_vector_count']}")
+
+    else:
+        print("No chunks generated. Skipping storage")
+
+if __name__ == "__main__":
+    main()

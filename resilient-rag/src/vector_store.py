@@ -20,16 +20,16 @@ class VectorDBManager:
             api_key=self.config.OPENAI_API_KEY
         )
 
-        def _validate_keys(self):
-            if not self.config.PINECONE_API_KEY or not self.config.OPENAI_API_KEY:
-                raise ValueError(
-                    "API keys for Pinecone and OpenAI must be set in environment variables")
+    def _validate_keys(self):
+        if not self.config.PINECONE_API_KEY or not self.config.OPENAI_API_KEY:
+            raise ValueError(
+                "API keys for Pinecone and OpenAI must be set in environment variables")
 
-        def ensure_index_exists(self):
-            """Checks if index exists. If not create one"""
-            existing_indexes = [i.name for i in self.pc.list_indexes()]
+    def ensure_index_exists(self):
+        """Checks if index exists. If not create one"""
+        existing_indexes = [i.name for i in self.pc.list_indexes()]
 
-            if self.config.INDEX_NAME not in existing_indexes:
+        if self.config.INDEX_NAME not in existing_indexes:
                 print(
                     f"Index '{self.config.INDEX_NAME}' not found. Creating the Pinecone index")
 
@@ -56,30 +56,29 @@ class VectorDBManager:
                     print(f"Failed to create index: {e}")
                     raise e
 
-            else:
-                print(f"Index '{self.config.INDEX_NAME}' already exists")
+        else:
+            print(f"Index '{self.config.INDEX_NAME}' already exists")
 
-        def get_vector_store(self):
+    def get_vector_store(self):
 
-            """Returns Pinecone Vector Store instance"""
-            return PineconeVectorStore(
+        """Returns Pinecone Vector Store instance"""
+        return PineconeVectorStore(
                 index_name=self.config.INDEX_NAME,
                 embedding=self.embeddings,
                 pinecone_api_key=self.config.PINECONE_API_KEY
             )
         
-        def upsert_chunks(self, chunks):
+    def upsert_chunks(self, chunks):
 
-            """Takes chunks from ingestion and upload them"""
-            self.ensure_index_exists()
+        """Takes chunks from ingestion and upload them"""
+        self.ensure_index_exists()
 
-            print(f"Upserting {len(chunks)} chunks to Pinecone")
-            vector_store = self.get_vector_store()
+        print(f"Upserting {len(chunks)} chunks to Pinecone")
+        vector_store = self.get_vector_store()
+        try:
+            vector_store.add_documents(documents=chunks)
+            print("Upsert complete!")
 
-            try:
-                vector_store.add_documents(documents=chunks)
-                print("Upsert complete!")
-
-            except Exception as e:
-                print(f"Failed to upsert chunks: {e}")
-                raise e
+        except Exception as e:
+            print(f"Failed to upsert chunks: {e}")
+            raise e
