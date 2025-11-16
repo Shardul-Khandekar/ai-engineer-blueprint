@@ -1,64 +1,75 @@
-from langchain_openai import ChatOpenAI
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
+# src/rag.py
+from typing import List
+from operator import itemgetter
+
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_pinecone import PineconeVectorStore
+
 from src.config import Config
 from src.vector_store import VectorDBManager
 
 
-class RAGEngine:
+def _join_docs(docs) -> str:
+    return "\n\n".join(d.page_content for d in docs)
 
+
+class RAGEngine:
     def __init__(self):
         self.config = Config()
         self.db_manager = VectorDBManager()
 
-        # Setup LLM
+        # LLM
         self.llm = ChatOpenAI(
             model=self.config.LLM_MODEL,
             temperature=self.config.TEMPERATURE,
-            api_key=self.config.OPENAI_API_KEY
+            api_key=self.config.OPENAI_API_KEY,
         )
 
-        # Setup Retriever
+        # Retriever
         self.retriever = self.db_manager.get_vector_store().as_retriever(
             search_type="similarity",
-            search_kwargs={"k": 3}
+            search_kwargs={"k": 3},
         )
 
-        # Build RAG Chain
-        self.chain = self._build_chain()
+        # Prompt & chain (Runnable/LCEL)
+        self.prompt = ChatPromptTemplate.from_template(
+            """You are a helpful assistant. Answer the user's question based ONLY on the context provided.
+If the answer is not in the context, say "I don't know" and do not make up facts.
 
-    def _build_chain(self):
+<context>
+{context}
+</context>
 
-        prompt = ChatPromptTemplate.from_template("""
-        You are a helpful assistant. Answer the user's question based ONLY on the context provided below.
-        If the answer is not in the context, say "I don't know" and do not make up facts.
+Question: {question}"""
+        )
 
-        <context>
-        {context}
-        </context>
+        # Build: retrieve -> format -> prompt -> llm -> text
+        self.chain = (
+            {
+                "context": self.retriever | _join_docs,   # docs -> joined context
+                "question": RunnablePassthrough(),        # pass the user input through
+            }
+            | self.prompt
+            | self.llm
+            | StrOutputParser()
+        )
 
-        Question: {input}
-        """)
+    def query(self, user_input: str) -> dict:
+        """
+        Run retrieval and generation. Returns fields compatible with RAGAS:
+        - answer: str
+        - contexts: List[str] (just the page contents)
+        - source_metadata: List[dict]
+        """
+        # Get docs explicitly so we can expose them
+        docs = self.retriever.invoke(user_input)
+        answer_text = self.chain.invoke(user_input)
 
-        # It takes a list of documents and embeds them into the prompt template in the context section.
-        document_chain = create_stuff_documents_chain(self.llm, prompt)
-        # the below functions by taking input, passing it to the retriever to get relevant documents,
-        # and then passing those documents to the document_chain to generate a final answer.
-        retrieval_chain = create_retrieval_chain(
-            self.retriever, document_chain)
-
-        return retrieval_chain
-
-    def query(self, user_input: str):
-        """Runs the query and returns a structured response"""
-        print(f"Processing query: '{user_input}'")
-
-        response = self.chain.invoke({"input": user_input})
-
-        # Return response and source documents
         return {
-            "answer": response["answer"],
-            "sources": [doc.page_content for doc in response["context"]],
-            "source_metadata": [doc.metadata for doc in response["context"]]
+            "answer": answer_text,
+            "contexts": [d.page_content for d in docs],
+            "source_metadata": [d.metadata for d in docs],
         }
