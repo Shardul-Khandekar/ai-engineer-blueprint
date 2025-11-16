@@ -1,0 +1,26 @@
+[
+  {
+    "question": "What specific categories of personal data are generally prohibited from being processed?",
+    "ground_truth": "Processing of personal data revealing racial or ethnic origin, political opinions, religious or philosophical beliefs, or trade union membership, and the processing of genetic data, biometric data for the purpose of uniquely identifying a natural person, data concerning health or data concerning a natural person’s sex life or sexual orientation shall be prohibited."
+  },
+  {
+    "question": "Under what circumstances can a comprehensive register of criminal convictions be kept?",
+    "ground_truth": "Any comprehensive register of criminal convictions shall be kept only under the control of official authority."
+  },
+  {
+    "question": "What are the conditions regarding fees for information provided by the controller?",
+    "ground_truth": "Information provided shall be free of charge. However, where requests are manifestly unfounded or excessive, in particular because of their repetitive character, the controller may either charge a reasonable fee based on administrative costs or refuse to act on the request."
+  },
+  {
+    "question": "What is the timeline for a controller to respond to a data subject's request?",
+    "ground_truth": "The controller shall provide information without undue delay and in any event within one month of receipt of the request. That period may be extended by two further months where necessary, taking into account the complexity and number of the requests."
+  },
+  {
+    "question": "List the principles relating to processing of personal data.",
+    "ground_truth": "Personal data must be: 1. Processed lawfully, fairly, and transparently. 2. Collected for specified, explicit, and legitimate purposes (purpose limitation). 3. Adequate, relevant, and limited to what is necessary (data minimisation). 4. Accurate and kept up to date. 5. Kept in a form which permits identification for no longer than necessary (storage limitation). 6. Processed in a manner that ensures appropriate security (integrity and confidentiality)."
+  },
+  {
+    "question": "When is processing considered lawful without consent?",
+    "ground_truth": "Processing is lawful without consent if it is necessary for: the performance of a contract; compliance with a legal obligation; protecting vital interests of the data subject or another person; the performance of a task carried out in the public interest or official authority; or legitimate interests pursued by the controller or a third party."
+  }
+]
