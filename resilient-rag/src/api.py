@@ -4,6 +4,7 @@ from src.models import QueryRequest, QueryResponse, HealthStatus
 from src.rag import RAGEngine
 from src.vector_store import VectorDBManager
 from src.ingestion import IngestionPipeline
+import traceback
 
 
 ml_models = {}
@@ -39,11 +40,13 @@ async def chat_endpoint(request: QueryRequest):
     try:
         rag_engine = ml_models["rag_engine"]
         result = rag_engine.query(request.query)
+        print(f"Query processed successfully {result}")
         return QueryResponse(
             answer=result["answer"],
-            sources=result["sources"]
+            sources=result["source"]
         )
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
