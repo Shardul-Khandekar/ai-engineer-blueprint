@@ -45,3 +45,22 @@ async def chat_endpoint(request: QueryRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health", response_model=HealthStatus)
+async def health_check():
+
+    pc_status = "unknown"
+    oa_status = "connected"
+
+    try:
+        ml_models["db_manager"].pc.list_indexes()
+        pc_status = "connected"
+    except Exception:
+        pc_status = "disconnected"
+
+    return HealthStatus(
+        status="active",
+        pinecone=pc_status,
+        openai=oa_status
+    )
