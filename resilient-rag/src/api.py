@@ -64,3 +64,20 @@ async def health_check():
         pinecone=pc_status,
         openai=oa_status
     )
+
+
+@app.post("/ingest")
+async def trigger_ingestion():
+
+    try:
+        pipeline = IngestionPipeline()
+        chunks = pipeline.run()
+
+        if chunks:
+            db_manager = ml_models["db_manager"]
+            db_manager.upsert_chunks(chunks)
+            return {"status": "success", "chunks_processed": len(chunks)}
+        else:
+            return {"status": "warning", "message": "No docs found"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
