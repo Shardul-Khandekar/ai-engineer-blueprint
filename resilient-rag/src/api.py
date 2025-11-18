@@ -43,7 +43,7 @@ async def chat_endpoint(request: QueryRequest):
         print(f"Query processed successfully {result}")
         return QueryResponse(
             answer=result["answer"],
-            sources=result["source"]
+            sources=[meta.get("source", "Unknown") for meta in result["source_metadata"]]
         )
     except Exception as e:
         traceback.print_exc()
