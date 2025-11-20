@@ -1,5 +1,5 @@
 from langchain_pinecone import PineconeVectorStore
-from langchain_tavily import TavilySearch
+from langchain_community.tools.tavily_search.tool import TavilySearchResults
 from config import embeddings, pinecone_index_name, tavily_api_key
 
 
@@ -22,7 +22,7 @@ def get_search_tool():
     """
         Creates and returns a Tavily search tool
     """
-    search_tool = TavilySearch(
+    search_tool = TavilySearchResults(
         api_key=tavily_api_key)
     
     return search_tool
