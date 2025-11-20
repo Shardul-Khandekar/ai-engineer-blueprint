@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components  # Added for HTML rendering
 import sys
 import os
 import glob
@@ -99,8 +100,15 @@ if 'active_file' in st.session_state:
 
     with st.expander("Hide Document View", expanded=True):
         content = read_file_content(st.session_state['active_file'])
-        # Simple scrollable text area for now
-        st.text_area("File Content", content, height=400)
+
+        # Check if the file is HTML to render it properly
+        if st.session_state['active_file'].endswith(".html"):
+            # Render HTML using Streamlit Components
+            # We set a large height and allow scrolling to view the full document
+            components.html(content, height=800, scrolling=True)
+        else:
+            # Fallback for text files
+            st.text_area("File Content", content, height=400)
 
     st.divider()
 
@@ -132,6 +140,7 @@ if prompt := st.chat_input("Enter a Ticker Symbol (e.g., TSLA)..."):
                 status_placeholder.markdown(success_msg)
                 st.session_state.messages.append(
                     {"role": "assistant", "content": success_msg})
+                # Force rerun to update sidebar immediately
                 st.rerun()
             else:
                 fail_msg = f"Download attempted, but no file found for **{ticker}**. It might not exist or the SEC API failed."
