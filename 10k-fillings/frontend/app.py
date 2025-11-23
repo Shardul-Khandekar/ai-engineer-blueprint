@@ -10,7 +10,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 # Import backend module
-from backend import sec_edgar_fillings_downloader
+# from backend import sec_edgar_fillings_downloader
 
 # Streamlit app configuration
 st.set_page_config(layout="wide", page_title="Financial Agent")
@@ -33,13 +33,13 @@ def get_downloaded_files():
     # The sec-edgar-downloader creates a structure like:
     # sec_filings/sec-edgar-filings/AAPL/10-K/000.../primary-document.html
     search_path = os.path.join(
-        DATA_DIR, "sec-edgar-filings", "*", "10-K", "*", "*.html")
+        DATA_DIR, "*.html")
     found_files = glob.glob(search_path)
 
     # Also look for .txt files
     if not found_files:
         search_path_txt = os.path.join(
-            DATA_DIR, "sec-edgar-filings", "*", "10-K", "*", "*.txt")
+            DATA_DIR, "*.txt")
         found_files = glob.glob(search_path_txt)
 
     for filepath in found_files:
@@ -47,19 +47,18 @@ def get_downloaded_files():
         parts = filepath.split(os.sep)
 
         try:
-            # Find index of 'sec-edgar-filings' and get the next folder (Ticker)
-            idx = parts.index("sec-edgar-filings")
-            ticker = parts[idx + 1]
+            filename = os.path.basename(filepath)
+            ticker = filename.split('_')[0]
 
             if ticker not in files_map:
                 files_map[ticker] = []
+
             files_map[ticker].append(filepath)
 
         except ValueError:
             continue
 
     return files_map
-
 
 def read_file_content(filepath):
     """
@@ -98,17 +97,48 @@ st.title("🤖 10-K Analyst Agent")
 if 'active_file' in st.session_state:
     st.info(f"Viewing 10-K for **{st.session_state['active_ticker']}**")
 
-    with st.expander("Hide Document View", expanded=True):
-        content = read_file_content(st.session_state['active_file'])
+    # Use a container to clearly delineate the document viewer section
+    document_container = st.container()
 
-        # Check if the file is HTML to render it properly
-        if st.session_state['active_file'].endswith(".html"):
-            # Render HTML using Streamlit Components
-            # We set a large height and allow scrolling to view the full document
-            components.html(content, height=800, scrolling=True)
-        else:
-            # Fallback for text files
-            st.text_area("File Content", content, height=400)
+    with document_container:
+        with st.expander("Hide Document View", expanded=True):
+            content = read_file_content(st.session_state['active_file'])
+
+            # Check if the file is HTML (including .htm) to render it properly
+            if st.session_state['active_file'].endswith((".html", ".htm")):
+                
+                # JavaScript to disable all anchor tags (links)
+                js_disable_links = """
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var links = document.querySelectorAll('a');
+                    links.forEach(function(link) {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault(); // Stop the link from navigating
+                            e.stopPropagation(); // Stop event propagation
+                        });
+                    });
+                });
+                </script>
+                """
+
+                # Wrap content with styling for visibility (black text on white background) 
+                # and append the script to disable link navigation.
+                styled_content = f"""
+                <div style="color: black; background-color: white; padding: 20px;">
+                    {content}
+                </div>
+                {js_disable_links}
+                """
+
+                components.html(
+                    styled_content, 
+                    height=800, 
+                    scrolling=True,
+                )
+            else:
+                # Fallback for text files
+                st.text_area("File Content", content, height=400)
 
     st.divider()
 
