@@ -12,7 +12,7 @@ if not SEC_API_KEY:
 # Initialize the QueryApi with the SEC API key
 query_api = QueryApi(api_key=SEC_API_KEY)
 
-def get_latest_10k_filing_url(ticker: str) -> str | None:
+def get_latest_10k_filing_data(ticker: str) -> str | None:
     """
         Queries the SEC API to find the URL of the most recent 10-K filing
     """
@@ -33,11 +33,8 @@ def get_latest_10k_filing_url(ticker: str) -> str | None:
         # print(f"SEC API response for ticker {ticker}: {response}")
         filings = response.get('filings', [])
 
-        if filings:
-            # Extract the filing URL
-            filing_url = filings[0].get('linkToFilingDetails')
-            print(f"Found latest 10-K URL for {ticker}: {filing_url}")
-            return filing_url
+        if response:
+            return response
         else:
             print(f"No 10-K filing found for ticker: {ticker}")
             return None
@@ -46,5 +43,6 @@ def get_latest_10k_filing_url(ticker: str) -> str | None:
         return None
 
 # Example usage
-filing_url = get_latest_10k_filing_url("AAPL")
-print(filing_url)
+filing_data = get_latest_10k_filing_data("AAPL")
+filing_url = filing_data['filings'][0].get('linkToFilingDetails')
+print(f"Found latest 10-K URL for AAPL: {filing_url}")
