@@ -119,3 +119,6 @@ dmypy.json
 # Windows
 Thumbs.db
 ehthumbs.db
+
+sample_url_response.json
+extracted_10k_sections/
