@@ -2,6 +2,7 @@ import os
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
+from reranker_module import setup_reranking_retriever
 
 # Configuration
 CHROMA_DB_DIR = "resume_chroma_db"
@@ -49,6 +50,33 @@ def test_retrieval(query: str):
         print(f"'{doc.page_content[:300]}...'")
         print("-" * 50)
 
+
+def test_reranking(query: str):
+    """
+    Performs the RAG retrieval using the reranker and displays the improved results.
+    """
+
+    print(f"--- Reranking Retrieval for Query: '{query}' ---")
+
+    reranking_retriever = setup_reranking_retriever()
+    reranked_docs = reranking_retriever(query)
+    print(f"\n Reranking Successful! Found {len(reranked_docs)} relevant chunks after reranking\n")
+
+    # Print the retrieved documents
+    for i, doc in enumerate(reranked_docs):
+        # Extract the source and page number from the metadata
+        source = doc.metadata.get('source', 'N/A')
+        page = doc.metadata.get('page', 'N/A')
+
+        print("-" * 50)
+        print(f"** Chunk {i+1} **")
+        print(f"Source: {os.path.basename(source)} (Page {page})")
+        print(f"Relevance Score (Internal to Chroma): {doc.metadata.get('_score', 'N/A')}")
+        print("Content Snippet (First 300 chars):")
+        print(f"'{doc.page_content[:300]}...'")
+        print("-" * 50)
+
+
 if __name__ == "__main__":
 
     test_queries = [
@@ -57,5 +85,5 @@ if __name__ == "__main__":
     ]
 
     for q in test_queries:
-        test_retrieval(q)
+        test_reranking(q)
         print("\n" + "="*80 + "\n")
